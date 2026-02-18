@@ -1,0 +1,41 @@
+# IDE & editor
+.claude/
+.cursor/
+.vscode/
+.idea/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Credentials
+**/credentials.json
+**/secrets.*
+**/*.key
+**/*.pem
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# C / ESP-IDF build artifacts
+firmware/build/
+firmware/sdkconfig.old
+firmware/managed_components/
+
+# Python (edge services)
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Local development
+local_config/
+private/
+tmp/
+
+# Planning docs (private)
+_bmad-output/
+_bmad/
