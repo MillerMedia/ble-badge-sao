@@ -1,5 +1,11 @@
 # ble-badge-sao
 
+## TL;DR
+
+We're building a small badge that clips onto your DEFCON badge and silently logs every Bluetooth device around you. 50 people wear them. Base stations hidden around the venue collect the data. A live dashboard shows what we found. You don't have to do anything — just wear it and walk around. That's the point: most people have no idea how much their devices broadcast.
+
+---
+
 **ESP32-C3 BLE scanning badge** — a conference SAO that passively discovers Bluetooth devices, stores observations locally, and syncs to base stations for live analysis.
 
 Part of a larger platform where every BLE device is a "species" and every badge wearer is an unwitting field researcher.
