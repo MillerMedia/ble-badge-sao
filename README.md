@@ -69,9 +69,15 @@ Every badge wearer becomes a data collector — which is itself the privacy poin
 - [ ] WiFi sync protocol for base station communication
 
 ### Base Station
-- [ ] WiFi AP and badge receiver
-- [ ] GPS geo-tagging
-- [ ] Upstream sync to platform API
+- [ ] SBC / compute platform selection (Pi Zero 2 W? ESP32? other?)
+- [ ] Enclosure design — small enough to place discreetly
+- [ ] Power strategy (USB battery pack, wall plug, both?)
+- [ ] Battery life target for untethered operation
+- [ ] WiFi AP for badge sync + uplink for platform API
+- [ ] Location strategy (GPS module vs. pre-configured coordinates)
+- [ ] Upstream sync protocol to platform API
+- [ ] How many stations needed for venue coverage?
+- [ ] Deployment and retrieval plan
 
 ## Proposed Hardware Specs
 
@@ -135,6 +141,45 @@ Each observation: MAC address (6B), RSSI (1B), timestamp (4B), advertising data 
 - How should badges identify themselves to base stations?
 - What LED patterns are most useful/visible on a conference floor?
 - Any power budget concerns with LED + continuous scanning?
+
+## Proposed Base Station Architecture
+
+Base stations are the bridge between badges and the platform. They need to be **small enough to drop discreetly around a venue** — tucked behind furniture, mounted under tables, placed on shelves. Battery-powered for flexibility, but able to plug in where outlets are available.
+
+### Proposed Specs
+
+| Spec | Current Proposal | Open Questions |
+|---|---|---|
+| Compute | Raspberry Pi Zero 2 W | Overkill? Could an ESP32 handle this? |
+| Size | As small as possible + enclosure | What's the smallest viable package? |
+| Power | USB battery pack or wall plug | How many hours on a typical 10,000mAh bank? |
+| WiFi | AP mode for badge sync + client mode for uplink | Can one radio do both? Separate dongles? |
+| Location | Pre-configured coordinates per station | GPS module adds cost/size — worth it if stations are fixed? |
+| Uplink | WiFi client to venue network → HTTPS to platform API | Cellular fallback? What if venue WiFi is unreliable? |
+| Storage | Local buffer for offline resilience | How much local storage if uplink drops? |
+| Quantity | 3-5 per venue (TBD) | What's the coverage radius per station? |
+
+### How It Works
+
+1. Base station boots, starts WiFi AP with known SSID
+2. Badges in range connect and dump their observation buffer
+3. Base station tags observations with its pre-configured location
+4. Forwards batches to platform API over venue WiFi (or cellular)
+5. Local buffer holds data if uplink is temporarily unavailable
+
+### Discreet Deployment
+
+The goal is to place these around a venue without them being obvious. Think:
+- Behind a booth display
+- Under a table at a village
+- On a shelf in a chillout area
+- Near power outlets where possible (extends runtime)
+
+**Open questions:**
+- What's the right enclosure? Off-the-shelf project box? 3D printed?
+- Visual indicator (LED) on the station — useful for debugging but makes it less discreet?
+- Security — what stops someone from connecting a non-badge device to the AP?
+- Retrieval plan — how do you make sure you get them all back?
 
 ## Proposed Tech Stack
 
