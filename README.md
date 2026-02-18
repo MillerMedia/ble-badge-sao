@@ -45,59 +45,109 @@ Every badge wearer becomes a data collector — which is itself the privacy poin
 
 **Target: 50 badges** distributed at DEFCON. Base stations placed around the venue. A live web dashboard shows the collective findings in real time.
 
-## Badge Hardware Specs
+## Project Checklist
 
-| Spec | Target |
-|---|---|
-| MCU | ESP32-C3 (BLE 5.0, RISC-V, lowest power draw) |
-| Form factor | SAO v1.69bis standard connector |
-| Power | Host badge via SAO connector (no onboard battery) |
-| Storage | ~2MB flash for observation ring buffer (~41K observations) |
-| Antenna | PCB trace or ceramic chip — 10m effective range |
-| LED | Min 1 for status (scanning/sync/error) |
-| QR code | On-board, linking to results dashboard |
-| BOM target | Under $15/unit at 50-unit batch |
-| Durability | Survives 3 days of conference wear |
+### Identity & Design
+- [ ] Badge name (working name: "ble-badge-sao" — open to ideas)
+- [ ] Visual motif / theme (birding? surveillance? wildlife research? something else?)
+- [ ] Brand elements for PCB silkscreen art
+- [ ] QR code approach (silkscreen vs. sticker — affects replaceability)
 
-## Contributing
+### Hardware Design
+- [ ] MCU selection finalized (currently proposing ESP32-C3)
+- [ ] SAO v1.69bis connector routing
+- [ ] Antenna approach (PCB trace vs. ceramic chip)
+- [ ] LED count and placement
+- [ ] Component selection and BOM
+- [ ] PCB schematic and layout
+- [ ] Assembly method for 50-unit batch
+- [ ] Prototype build and test
 
-We're looking for help in two areas — hardware design and firmware. **You don't need custom hardware to start on firmware** — any ESP32-C3 dev board works.
+### Firmware
+- [ ] BLE scanning implementation
+- [ ] Observation storage (ring buffer vs. alternatives)
+- [ ] Badge identity system
+- [ ] LED status patterns
+- [ ] Power management for 16-hour operation
+- [ ] WiFi sync protocol for base station communication
 
-### Hardware Design (Story 1.1)
+### Base Station
+- [ ] WiFi AP and badge receiver
+- [ ] GPS geo-tagging
+- [ ] Upstream sync to platform API
 
-Design the physical SAO badge — PCB schematic, component selection, and layout.
+## Proposed Hardware Specs
 
-**Skills needed:** PCB/schematic design, ESP32 hardware experience, SAO standard familiarity
+These are starting proposals — not set in stone. If you have experience with any of this and think there's a better approach, open an issue or PR.
 
-**Key decisions:**
-- Antenna approach (PCB trace vs. ceramic chip)
-- QR code method (silkscreen vs. sticker)
-- LED placement and count
-- Connector routing and mechanical durability
-- Assembly method for 50-unit batch
-
-### Firmware (Stories 1.2–1.4)
-
-Implement the scanning and storage firmware. Develop on **any ESP32-C3 dev board** ($5-10) — no custom PCB needed.
-
-| Story | Description | Key Details |
+| Spec | Current Proposal | Open Questions |
 |---|---|---|
-| 1.2 — BLE Scanning | Passive BLE scanner using NimBLE | Capture MAC (randomized-aware), RSSI, timestamp, raw advertising data. Track unique vs. repeat devices. |
-| 1.3 — Ring Buffer Storage | Circular buffer in dedicated flash partition | ~41K observation capacity. Oldest-evicted-first when full. Power-loss safe writes. |
-| 1.4 — Badge Identity & LED | Unique badge ID + status indicators | Short hex ID burned at flash time. LED patterns for scanning, sync, error states. 16-hour continuous operation. |
+| MCU | ESP32-C3 (BLE 5.0, RISC-V, lowest power draw) | Is C3 the right variant? C6 has BLE 5.3 + 802.15.4 |
+| Form factor | SAO v1.69bis standard connector | Any mechanical concerns at this size? |
+| Power | Host badge via SAO connector (no onboard battery) | What current can we expect from host badges? |
+| Storage | ~2MB flash for ring buffer (~41K observations) | Is ring buffer the right pattern? Alternatives? |
+| Antenna | PCB trace or ceramic chip — 10m effective range | Which performs better in a crowded RF environment? |
+| LED | Min 1 for status (scanning/sync/error) | More LEDs? RGB? What status states matter most? |
+| QR code | On-board, linking to results dashboard | Silkscreen (permanent) vs. sticker (replaceable)? |
+| BOM target | Under $15/unit at 50-unit batch | Realistic? Where are the cost risks? |
+| Durability | Survives 3 days of conference wear | Conformal coating? Connector reinforcement? |
 
-### Base Station (Epic 2)
+## Proposed Firmware Architecture
 
-Raspberry Pi that acts as a WiFi AP for badge sync, adds GPS coordinates, and forwards data to the platform. This comes after the badge firmware is working.
+The firmware approach below is a starting point. We're looking for input on all of it — if you've built BLE scanners, ring buffers on flash, or SAO firmware before, your experience is valuable.
 
-## Tech Stack
+### BLE Scanning (Proposed)
 
-| Component | Technology |
-|---|---|
-| Badge firmware | C, ESP-IDF 5.5.x, NimBLE |
-| Base station | Python, FastAPI (lightweight receiver) |
-| Build system | CMake (ESP-IDF) |
-| Flash tool | esptool.py |
+**Proposed approach:** ESP-IDF 5.5.x with NimBLE stack, passive scanning mode.
+
+Capture MAC address (randomization-aware), RSSI, timestamp, and raw advertising data for each detected device. Track unique vs. repeat devices within a scan window.
+
+**Open questions:**
+- Scan window and interval tuning for power vs. coverage?
+- How to handle MAC randomization effectively?
+- Any preprocessing worth doing on-device vs. sending raw data?
+
+### Observation Storage (Proposed)
+
+**Proposed approach:** Circular ring buffer in a dedicated flash partition. Fixed-size records. Oldest entries evicted when full. Power-loss safe writes.
+
+```
+┌──────────────────────────────────────┐
+│  Flash Partition (~2MB)              │
+│  ┌───┬───┬───┬───┬───┬───┬───┬───┐  │
+│  │ 1 │ 2 │ 3 │ 4 │ 5 │ 6 │...│ N │  │
+│  └───┴───┴───┴─▲─┴───┴───┴───┴───┘  │
+│                │                     │
+│            write_ptr                 │
+│     (next write overwrites oldest)   │
+└──────────────────────────────────────┘
+```
+
+Each observation: MAC address (6B), RSSI (1B), timestamp (4B), advertising data (up to 31B), plus metadata.
+
+**Open questions:**
+- Ring buffer vs. other storage patterns (log-structured, compressed blocks)?
+- Optimal record size — what advertising data fields are worth storing?
+- Flash wear leveling strategy?
+
+### Badge Identity & LED (Proposed)
+
+**Proposed approach:** Unique short hex ID burned at flash time. LED patterns to indicate scanning, sync, and error states. Target 16-hour continuous operation.
+
+**Open questions:**
+- How should badges identify themselves to base stations?
+- What LED patterns are most useful/visible on a conference floor?
+- Any power budget concerns with LED + continuous scanning?
+
+## Proposed Tech Stack
+
+| Component | Current Proposal | Alternatives? |
+|---|---|---|
+| Badge firmware | C, ESP-IDF 5.5.x | Arduino framework? Zephyr RTOS? |
+| BLE stack | NimBLE (~50% less RAM than Bluedroid) | Bluedroid if we need features NimBLE lacks? |
+| Base station | Python, FastAPI (lightweight receiver) | Go? Rust? Direct socket? |
+| Build system | CMake (ESP-IDF) | PlatformIO? |
+| Flash tool | esptool.py | — |
 
 ## Repo Structure
 
@@ -116,27 +166,9 @@ ble-badge-sao/
 
 ## Key Concepts
 
-### Ring Buffer Storage
-
-The badge stores observations in a circular buffer on flash. When storage fills up, the oldest entries get overwritten — no data loss panic, just a rolling window of the most recent ~41K observations.
-
-```
-┌──────────────────────────────────────┐
-│  Flash Partition (~2MB)              │
-│  ┌───┬───┬───┬───┬───┬───┬───┬───┐  │
-│  │ 1 │ 2 │ 3 │ 4 │ 5 │ 6 │...│ N │  │
-│  └───┴───┴───┴─▲─┴───┴───┴───┴───┘  │
-│                │                     │
-│            write_ptr                 │
-│     (next write overwrites oldest)   │
-└──────────────────────────────────────┘
-```
-
-Each observation is a fixed-size record: MAC address (6B), RSSI (1B), timestamp (4B), advertising data (up to 31B), plus metadata. When the write pointer wraps around, you're always looking at the freshest data.
-
 ### NimBLE (vs. Bluedroid)
 
-We use **NimBLE**, the lightweight BLE stack for ESP-IDF, instead of the default Bluedroid. NimBLE uses ~50% less RAM, has a simpler API, and is better suited for a single-purpose scanner that needs to run for 16+ hours on limited resources.
+We're proposing **NimBLE**, the lightweight BLE stack for ESP-IDF, instead of the default Bluedroid. NimBLE uses ~50% less RAM, has a simpler API, and is better suited for a single-purpose scanner that needs to run for 16+ hours on limited resources.
 
 ### SAO v1.69bis
 
