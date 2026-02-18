@@ -2,7 +2,7 @@
 
 **ESP32-C3 BLE scanning badge** — a conference SAO that passively discovers Bluetooth devices, stores observations locally, and syncs to base stations for live analysis.
 
-Built for the [bluetooth-warwalking](https://github.com/mattmiller/bluetooth-warwalking) platform, where every BLE device is a "species" and every badge wearer is an unwitting field researcher.
+Part of a larger platform where every BLE device is a "species" and every badge wearer is an unwitting field researcher.
 
 ## What It Does
 
@@ -110,10 +110,9 @@ ble-badge-sao/
 
 ## Getting Started
 
-1. **Join the Discord** — link in the project description
-2. **Grab an ESP32-C3 dev board** — Seeed XIAO ESP32-C3 or any ESP32-C3 devkit ($5-10)
-3. **Set up ESP-IDF 5.5.x** — [Espressif docs](https://docs.espressif.com/projects/esp-idf/en/stable/esp32c3/get-started/)
-4. **Check the issues** for tagged tasks
+1. **Grab an ESP32-C3 dev board** — Seeed XIAO ESP32-C3 or any ESP32-C3 devkit ($5-10)
+2. **Set up ESP-IDF 5.5.x** — [Espressif docs](https://docs.espressif.com/projects/esp-idf/en/stable/esp32c3/get-started/)
+3. **Check the issues** for tagged tasks
 
 ## Key Concepts
 
@@ -142,10 +141,6 @@ We use **NimBLE**, the lightweight BLE stack for ESP-IDF, instead of the default
 ### SAO v1.69bis
 
 The [Shitty Add-On](https://hackaday.com/2019/03/20/introducing-the-shitty-add-on-v1-69bis-standard/) standard — a simple 2x3 pin connector that lets small PCBs attach to conference badges. Power comes from the host badge, so no onboard battery needed.
-
-## Related
-
-- **[bluetooth-warwalking](https://github.com/mattmiller/bluetooth-warwalking)** — the platform that ingests badge data, classifies BLE devices into "species," and powers the dashboard, life lists, and gamification
 
 ## License
 
