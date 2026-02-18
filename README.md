@@ -10,8 +10,8 @@ Part of a larger platform where every BLE device is a "species" and every badge 
 graph LR
     subgraph BADGES["Badge Fleet (50 units)"]
         B1["Badge #1<br/><i>BLE scan + ring buffer</i>"]
-        B2["Badge #2"]
-        BN["Badge #N"]
+        B2["Badge #2<br/><i>BLE scan + ring buffer</i>"]
+        BN["Badge #N<br/><i>BLE scan + ring buffer</i>"]
     end
 
     subgraph BASES["Base Stations (venue-wide)"]
@@ -20,10 +20,7 @@ graph LR
         BS3["Base Station 3<br/><i>Chillout</i>"]
     end
 
-    B1 -- "WiFi sync" --> BS1
-    B1 -- "WiFi sync" --> BS2
-    B2 -- "WiFi sync" --> BS1
-    BN -- "WiFi sync" --> BS3
+    BADGES -- "WiFi sync<br/>(nearest station)" --> BASES
     BS1 -- "HTTPS" --> API["Platform API"]
     BS2 -- "HTTPS" --> API
     BS3 -- "HTTPS" --> API
