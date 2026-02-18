@@ -8,27 +8,32 @@ Built for the [bluetooth-warwalking](https://github.com/mattmiller/bluetooth-war
 
 ```mermaid
 graph LR
-    subgraph BADGE["Badge SAO"]
-        SCAN["BLE Scanner<br/><i>Passive scan</i>"]
-        RING["Ring Buffer<br/><i>~41K observations<br/>in ~2MB flash</i>"]
-        LED["Status LED<br/><i>Scan / Sync / Error</i>"]
+    subgraph BADGES["Badge Fleet (50 units)"]
+        B1["Badge #1<br/><i>BLE scan + ring buffer</i>"]
+        B2["Badge #2"]
+        BN["Badge #N"]
     end
 
-    subgraph BASE["Base Station"]
-        RPI["Raspberry Pi<br/><i>WiFi AP + receiver</i>"]
-        GEO["Geo-Tagger<br/><i>GPS coordinates</i>"]
+    subgraph BASES["Base Stations (venue-wide)"]
+        BS1["Base Station 1<br/><i>Main hall</i>"]
+        BS2["Base Station 2<br/><i>Villages</i>"]
+        BS3["Base Station 3<br/><i>Chillout</i>"]
     end
 
-    SCAN --> RING
-    RING -- "WiFi sync" --> RPI
-    RPI --> GEO
-    GEO -- "HTTPS" --> API["Platform API"]
+    B1 -- "WiFi sync" --> BS1
+    B1 -- "WiFi sync" --> BS2
+    B2 -- "WiFi sync" --> BS1
+    BN -- "WiFi sync" --> BS3
+    BS1 -- "HTTPS" --> API["Platform API"]
+    BS2 -- "HTTPS" --> API
+    BS3 -- "HTTPS" --> API
 
-    style SCAN fill:#2d6a4f,stroke:#1b4332,color:#fff
-    style RING fill:#2d6a4f,stroke:#1b4332,color:#fff
-    style LED fill:#2d6a4f,stroke:#1b4332,color:#fff
-    style RPI fill:#40916c,stroke:#2d6a4f,color:#fff
-    style GEO fill:#40916c,stroke:#2d6a4f,color:#fff
+    style B1 fill:#2d6a4f,stroke:#1b4332,color:#fff
+    style B2 fill:#2d6a4f,stroke:#1b4332,color:#fff
+    style BN fill:#2d6a4f,stroke:#1b4332,color:#fff
+    style BS1 fill:#40916c,stroke:#2d6a4f,color:#fff
+    style BS2 fill:#40916c,stroke:#2d6a4f,color:#fff
+    style BS3 fill:#40916c,stroke:#2d6a4f,color:#fff
     style API fill:#264653,stroke:#1d3557,color:#fff
 ```
 
